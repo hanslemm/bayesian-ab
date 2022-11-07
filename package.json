@@ -1,5 +1,5 @@
 {
-  "name": "bayesian_ab",
+  "name": "bayesian-ab",
   "version": "0.0.0",
   "description": "A library providing AB testing methods used",
   "main": "index.js",
@@ -16,9 +16,9 @@
   "author": "Hans Lemm <hcrlemm@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hanslemm/bayesian_ab/issues"
+    "url": "https://github.com/hanslemm/bayesian-ab/issues"
   },
-  "homepage": "https://github.com/hanslemm/bayesian_ab",
+  "homepage": "https://github.com/hanslemm/bayesian-ab",
   "dependencies": {
     "compute-divide": "^1.0.0",
     "compute-quantile": "^1.0.1",
