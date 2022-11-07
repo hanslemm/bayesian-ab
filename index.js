@@ -1,5 +1,5 @@
 
-var jStat = require('jStat').jStat;
+var { jStat } = require('jstat');
 var subtract = require( 'compute-subtract' );
 var divide = require( 'compute-divide' );
 var quantile = require( 'compute-quantile' );
