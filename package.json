@@ -23,7 +23,7 @@
     "compute-divide": "^1.0.0",
     "compute-quantile": "^1.0.1",
     "compute-subtract": "^1.0.1",
-    "jStat": "^1.1.3"
+    "jstat": "^1.1.3"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
