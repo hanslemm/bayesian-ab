@@ -20,9 +20,7 @@
   },
   "homepage": "https://github.com/hanslemm/bayesian_ab",
   "dependencies": {
-    "compute-add": "^1.0.1",
     "compute-divide": "^1.0.0",
-    "compute-multiply": "^1.0.0",
     "compute-quantile": "^1.0.1",
     "compute-subtract": "^1.0.1",
     "jStat": "^1.1.3"
