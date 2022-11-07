@@ -1,28 +1,26 @@
 
 var jStat = require('jStat').jStat;
-var add = require( 'compute-add' );
 var subtract = require( 'compute-subtract' );
-var multiply = require( 'compute-multiply' );
 var divide = require( 'compute-divide' );
 var quantile = require( 'compute-quantile' );
 var exports = module.exports = {};
 
 
 /**
-* FUNCTION: get_p_dist(num_donations, num_impressions, num_samples )
+* FUNCTION: get_p_dist(conversions, impressions, num_samples )
 *       Computes the posterior distribution over the donation rate 
 *
-* @param {Number} num_donations - number of donation the banner received
-* @param {Number} num_impressions - number of times the banner was shown
+* @param {Number} conversions - number of donation the banner received
+* @param {Number} impressions - number of times the banner was shown
 * @param {Number} num_samples - the number of samples to draw from the posterior
 * @return {Array} a sample from the posterior distribution
 */
 
-var get_p_dist = function(num_donations, num_impressions, num_samples){
+var get_p_dist = function(conversions, impressions, num_samples){
     if (typeof(num_samples)==='undefined') num_samples = 20000;
     p_dist = [];
     for (var i = 0; i < num_samples; i++){
-        p_dist.push(jStat.beta.sample(num_donations+1, num_impressions-num_donations+1));
+        p_dist.push(jStat.beta.sample(conversions+1, impressions-conversions+1));
     }
     return p_dist;
 }
@@ -48,12 +46,12 @@ var compute_credible_interval = function(dist, conf){
 *
 * @param {Object} rate_data - AB test data object
 * @param {Number} conf - desired confidence level e.g. 0.95
-* @return {Object} - a dict mapping banner names to credible intervals
+* @return {Object} - a dict mapping banner variations to credible intervals
 */
 var compute_credible_intervals = function(rate_data, conf){
     cis = {}
-    for (name in rate_data)
-        cis[name] = compute_credible_interval(rate_dists[name], conf)
+    for (variation in rate_data)
+        cis[variation] = compute_credible_interval(rate_dists[variation], conf)
     return cis
 }
 
@@ -62,25 +60,25 @@ var compute_credible_intervals = function(rate_data, conf){
 * FUNCTION: compute_probability_of_being_the_winner(rate_dists, num_samples)
 *       Computes the probability that a banner is better than all other banners
 *       in the test
-* @param {Object} rate_dists -  a dict mapping from banner names to donation rate distributions
+* @param {Object} rate_dists -  a dict mapping from banner variations to donation rate distributions
 * @param {Number} num_samples - the size of the donation rate distributions
-* @return {Object} - a dict mapping banner names to the probability that that banner is the winner
+* @return {Object} - a dict mapping banner variations to the probability that that banner is the winner
 */
 var compute_probability_of_being_the_winner = function(rate_dists, num_samples){
     num_wins = {}
 
-    for (name in rate_dists) {
-        num_wins[name] = 0.0
+    for (variation in rate_dists) {
+        num_wins[variation] = 0.0
     }
 
     for(var i = 0; i < num_samples; i++){
         winning_banner = ''
         winning_value = -1.0
 
-        for (name in rate_dists) {
-            if (rate_dists[name][i] > winning_value){
-                winning_value = rate_dists[name][i]
-                winning_banner = name
+        for (variation in rate_dists) {
+            if (rate_dists[variation][i] > winning_value){
+                winning_value = rate_dists[variation][i]
+                winning_banner = variation
             }
         }
         num_wins[winning_banner] = num_wins[winning_banner] + 1.0
@@ -88,8 +86,8 @@ var compute_probability_of_being_the_winner = function(rate_dists, num_samples){
 
     console.log(num_wins)
 
-    for(name in num_wins){
-        num_wins[name] = num_wins[name] / num_samples
+    for(variation in num_wins){
+        num_wins[variation] = num_wins[variation] / num_samples
     }
 
     return num_wins
@@ -119,25 +117,25 @@ var get_max_key = function(dict){
 * FUNCTION: compute_winners_lift(rate_dists, winner, conf)
 *       Computes a credible interval over the percent lift that the winning banner has
         over each of the other banners
-* @param {Object} rate_dists -  a dict mapping from banner names to donation rate distributions
-* @param {String} winner - the name of the winning banner
+* @param {Object} rate_dists -  a dict mapping from banner variations to donation rate distributions
+* @param {String} winner - the variation of the winning banner
 * @param {Number} conf - desired confidence level e.g. 0.95
-* @return {Object} - a dict mapping banner names to credible intervals 
+* @return {Object} - a dict mapping banner variations to credible intervals 
 */
 var compute_winners_lift = function(rate_dists, winner, conf){
     winning_dist = rate_dists[winner]
     lift_cis = {}
 
-    for(name in rate_dists) {
-        if(name == winner){
-            lift_cis[name] = [0.0, 0.0]
+    for(variation in rate_dists) {
+        if(variation == winner){
+            lift_cis[variation] = [0.0, 0.0]
             continue
         }
-        losing_dist = rate_dists[name]
+        losing_dist = rate_dists[variation]
         lift_dist = winning_dist.slice(0)
         subtract(lift_dist, losing_dist)
         divide(lift_dist, losing_dist)
-        lift_cis[name] = compute_credible_interval(lift_dist, conf)
+        lift_cis[variation] = compute_credible_interval(lift_dist, conf)
     }
     return lift_cis
 }
@@ -148,9 +146,9 @@ var compute_winners_lift = function(rate_dists, winner, conf){
 *        and a summary statistics (to be displayed in a table)
 * @param {Object} rate_data - donation and impression counts for each banner in the form:
                               rate_data= {
-                                'A' : {'num_donations': 500, 'num_impressions': 1000},
-                                'B' : {'num_donations': 488, 'num_impressions': 1000},
-                                'C' : {'num_donations': 480, 'num_impressions': 1000}
+                                'A' : {'conversions': 500, 'impressions': 1000},
+                                'B' : {'conversions': 488, 'impressions': 1000},
+                                'C' : {'conversions': 480, 'impressions': 1000}
                                 }
 * @param {Number} conf - desired confidence level e.g. 0.95
 * @param {Number} num_samples - the number of samples to draw from the posterior
@@ -166,17 +164,17 @@ exports.rate_comparison = function(rate_data, conf, num_samples){
     test_results = {}
 
     // compute posterior donation rate distributions
-    for (name in rate_data)
-        rate_dists[name] = get_p_dist(rate_data[name]['num_donations'], rate_data[name]['num_impressions'])
+    for (variation in rate_data)
+        rate_dists[variation] = get_p_dist(rate_data[variation]['conversions'], rate_data[variation]['impressions'])
 
     //compute confidence intervals
     test_results['Confidence Interval'] = compute_credible_intervals(rate_dists, conf)
 
     //compute the probability that a banner is the winner
-    test_results["Probability of Being the Winner"] = compute_probability_of_being_the_winner(rate_dists, num_samples)
+    test_results["Probability to Be Better"] = compute_probability_of_being_the_winner(rate_dists, num_samples)
 
     //// compute the liftthe winning banner has over each other banner
-    winner = get_max_key(test_results["Probability of Being the Winner"])
+    winner = get_max_key(test_results["Probability to Be Better"])
     test_results["Winner's Percent Lift"] = compute_winners_lift(rate_dists, winner, conf)
 
     return {'distributions':rate_dists, 'statistics':test_results}
