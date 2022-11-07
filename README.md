@@ -1,31 +1,27 @@
-wmf_ab
+bayesian_ab
 ======
 
-**wmf_ab** is a javascript library for A/B-testing 
-
-wmf_ab currently contain these tests:
-* comparing donation rates of a set of banners (rate_comparison)
+**bayesian_ab** is a javascript library for A/B-testing 
 
 
 ### Usage ###
 
 ```javascript
-var wmf_ab = require("wmf_ab");
+var bayesian_ab = require("bayesian_ab");
 // collect impression and donation counts
 var rate_data= {
     'A' : {'num_donations': 500, 'num_impressions': 1000},
     'B' : {'num_donations': 488, 'num_impressions': 1000},
     'C' : {'num_donations': 480, 'num_impressions': 1000}
 }
-results = wmf_ab.rate_comparison(rate_data)
-console.log(results['statistics'])
-
+results = bayesian_ab.rate_comparison(rate_data)
+return results
 ```
 
 ### Building from source ###
 
-To download the package and install the development dependencies run ```npm install git://github.com/ewulczyn/wmf_ab.git```
+To download the package and install the development dependencies run ```npm install git://github.com/hanslemm/bayesian_ab.git```
 
 ### License ###
 
-wmf_ab is distributed under the [MIT License](http://www.opensource.org/licenses/MIT).
+bayesian_ab is distributed under the [MIT License](http://www.opensource.org/licenses/MIT).
